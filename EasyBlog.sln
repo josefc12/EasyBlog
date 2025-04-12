@@ -1,0 +1,30 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyBlog.Api", "EasyBlog.Api\EasyBlog.Api.csproj", "{82350002-EAE0-46C6-8BC7-21C6257648F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyBlog.Web", "EasyBlog.Web\EasyBlog.Web.csproj", "{7884D50D-4D5C-4917-8229-54AA8F558BF1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{82350002-EAE0-46C6-8BC7-21C6257648F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82350002-EAE0-46C6-8BC7-21C6257648F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82350002-EAE0-46C6-8BC7-21C6257648F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82350002-EAE0-46C6-8BC7-21C6257648F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7884D50D-4D5C-4917-8229-54AA8F558BF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7884D50D-4D5C-4917-8229-54AA8F558BF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7884D50D-4D5C-4917-8229-54AA8F558BF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7884D50D-4D5C-4917-8229-54AA8F558BF1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EDAF4D8B-33F1-48B5-B06C-A7E80C8A77CA}
+	EndGlobalSection
+EndGlobal

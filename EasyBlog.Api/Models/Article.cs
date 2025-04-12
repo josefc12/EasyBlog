@@ -1,0 +1,13 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace EasyBlog.Api.Models
+{
+    public class Article
+    {
+        [Key]
+        public int Id {get; set;}
+        [MaxLength(200)]
+        public required string Title {get; set;}
+        public required string Body {get; set;}
+    }
+}
