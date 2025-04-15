@@ -1,13 +1,28 @@
+using System.Net.Http.Headers;
 using EasyBlog.Web.Components;
+using EasyBlog.Web.Refit;
 using Radzen;
+using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.ConfigureHostOptions(opts =>
+{
+    opts.ShutdownTimeout = TimeSpan.FromSeconds(1); // default is 30
+});
 
 builder.Services.AddRadzenComponents();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddRefitClient<IEasyBlogApi>().ConfigureHttpClient(
+        c => 
+            {
+                c.BaseAddress = new Uri("http://localhost:5174");
+            }
+    );
 
 var app = builder.Build();
 

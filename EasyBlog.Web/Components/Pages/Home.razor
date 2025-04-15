@@ -1,4 +1,8 @@
+@inject IEasyBlogApi EasyBlogApi
+
 @page "/"
+@using EasyBlog.Shared.Dtos
+@using EasyBlog.Web.Refit
 
 <PageTitle>Home</PageTitle>
 
@@ -6,15 +10,27 @@
 
 Skibidy number: @yikes
 
+Bababuey: @article.Title
+
 Welcome to your new app.
 
 <RadzenButton Click="@ButtonClicked" Text="Hi"></RadzenButton>
 @code {
 
-    private int yikes = 0;
 
-    void ButtonClicked()
+    private int yikes = 0;
+    private ArticleDto article = new ArticleDto(){Title = "nothing", Body = "nothing"};
+
+    private async Task ButtonClicked()
     {
         yikes += 1;
+        article = await this.FetchArticle();
     }
+
+    private async Task<ArticleDto> FetchArticle()
+    {
+        return await EasyBlogApi.GetArticle(1);
+    }
+
+
 }

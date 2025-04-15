@@ -8,6 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Radzen.Blazor" Version="6.5.2" />
+    <PackageReference Include="Refit" Version="8.0.0" />
+    <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EasyBlog.Shared\EasyBlog.Shared.csproj" />
   </ItemGroup>
 
 </Project>
