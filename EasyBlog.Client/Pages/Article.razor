@@ -1,0 +1,33 @@
+@inject IEasyBlogApi EasyBlogApi
+
+@page "/article/{id:int}"
+@using EasyBlog.Shared.Dtos
+@using EasyBlog.Client.Refit
+
+
+@if (articleDto != null)
+{
+
+    @if (articleDto.Title != null)
+    {
+        <RadzenText Text="@articleDto.Title" TextStyle="TextStyle.H4"></RadzenText>
+    }
+    @if (articleDto.Body != null)
+    {
+        @((MarkupString)articleDto.Body)
+    }
+
+}
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+    private ArticleDto? articleDto = null;
+
+    protected async override Task OnInitializedAsync()
+    {
+        // Use the `id` value here
+        articleDto = await EasyBlogApi.GetArticle(id);
+    }
+}

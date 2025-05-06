@@ -1,0 +1,72 @@
+@inject IEasyBlogApi EasyBlogApi
+@inject NavigationManager SkibiduNavigation
+
+@page "/create-article"
+@using EasyBlog.Shared.Dtos
+@using EasyBlog.Client.Refit
+
+<RadzenStack class="rz-p-4" Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent=JustifyContent.Stretch Gap="16">
+    <h1>Create a new article</h1>
+    <RadzenCard style="width: 100%;">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Enter the title</RadzenText>
+        <RadzenTextBox @bind-Value=@title  Style="width: 100%" aria-label="Title" />
+    </RadzenCard>
+
+    <RadzenCard style="height: 550px;width: 100%;">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Create the body of the article</RadzenText>
+        <RadzenHtmlEditor 
+            @bind-Value=@htmlValue 
+            style="height: 90%"
+            UploadComplete=@OnUploadComplete 
+            Execute=@OnExecute
+            UploadUrl="upload/image" />
+    </RadzenCard>
+    <RadzenButton Click=@(args => SubmitNewArticle()) Text="Submit" ButtonStyle="ButtonStyle.Secondary" />
+
+</RadzenStack>
+
+@code {
+
+    private string? title = null;
+    private string? htmlValue = null; 
+
+    void OnChange(string value, string name)
+    {
+        
+    }
+
+    private async Task SubmitNewArticle()
+    {
+
+        if (title == null || htmlValue == null)
+        {
+            return;
+        }
+
+        ArticleDto newArticle = new ArticleDto() {
+            Title = title,
+            Body = htmlValue
+        };
+
+        var result = await EasyBlogApi.PostArticle(newArticle);
+
+        if(result != null)
+        {
+            //navigate to the new article page
+            SkibiduNavigation.NavigateTo("article/"+ result);
+
+        }
+        return;
+        
+
+    }
+    void OnExecute(HtmlEditorExecuteEventArgs args)
+    {
+        
+    }
+
+    void OnUploadComplete(UploadCompleteEventArgs args)
+    {
+        
+    }
+}

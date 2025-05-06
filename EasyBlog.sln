@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyBlog.Web", "EasyBlog.We
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyBlog.Shared", "EasyBlog.Shared\EasyBlog.Shared.csproj", "{6D0B50E1-19A0-4A67-AA09-0D4CF9009EF5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyBlog.Client", "EasyBlog.Client\EasyBlog.Client.csproj", "{79D42DF8-2AF1-407D-9AD0-5C3B82995960}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{6D0B50E1-19A0-4A67-AA09-0D4CF9009EF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D0B50E1-19A0-4A67-AA09-0D4CF9009EF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D0B50E1-19A0-4A67-AA09-0D4CF9009EF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79D42DF8-2AF1-407D-9AD0-5C3B82995960}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79D42DF8-2AF1-407D-9AD0-5C3B82995960}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79D42DF8-2AF1-407D-9AD0-5C3B82995960}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79D42DF8-2AF1-407D-9AD0-5C3B82995960}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

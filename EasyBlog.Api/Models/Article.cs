@@ -9,5 +9,11 @@ namespace EasyBlog.Api.Models
         [MaxLength(200)]
         public required string Title {get; set;}
         public required string Body {get; set;}
+        public DateTime DateCreated {get; set;}
+
+        public Article()
+        {
+            DateCreated = DateTime.UtcNow;
+        }
     }
 }

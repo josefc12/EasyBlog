@@ -1,6 +1,7 @@
 
 using EasyBlog.Api.Data;
-using Microsoft.AspNetCore.Builder;
+using EasyBlog.Api.Repositories;
+using EasyBlog.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,9 +15,19 @@ builder.Services.AddDbContext<EasyBlogDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
+builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+builder.Services.AddScoped<IArticleService, ArticleService>();
 
-app.MapControllers();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorClient",
+        policy => policy.WithOrigins("http://localhost:5144")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod());
+});
+
+var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
@@ -24,4 +35,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowBlazorClient");
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 app.Run();
