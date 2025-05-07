@@ -1,0 +1,102 @@
+@using EasyBlog.Client.Refit
+@using EasyBlog.Shared.Dtos
+@inject IEasyBlogApi EasyBlogApi
+@inject DialogService DialogService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+<div style="max-width: 600px;">
+    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Nickname</RadzenText>
+        <RadzenTextBox @bind-Value=@_nickname aria-label="Default TextBox" />
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Password</RadzenText>
+        <RadzenPassword @bind-Value=@_password aria-label="enter password" />
+        <RadzenButton Click=@(args => OnSubmit(_nickname, _password)) Text="@_buttonText" ButtonStyle="ButtonStyle.Primary" />
+        <p>@_dialogStatus</p>
+    </RadzenStack>
+</div>
+
+@code {
+    string _dialogStatus = "";
+    string? _nickname = null;
+    string? _password = null;
+    string? _buttonText = "";
+
+    [Parameter]
+    public string LogicType { get; set; } = "Login";
+    [Parameter]
+    public EventCallback<bool> OnLoginStatusChanged { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        // Check login status on initialization
+        _buttonText = LogicType;
+    }
+    
+    private async Task OnSubmit(string nickname, string password)
+    {
+        UserDto inputData = new UserDto();
+        
+        //Manipulate the form data before sending
+        inputData.Nickname = nickname.Trim();
+        inputData.PasswordHash = password.Trim();
+
+        try
+        {
+            if (LogicType == "Register")
+            {
+                //Call the Refit API with the modified data
+                var result = await EasyBlogApi.UserRegister(inputData);
+                if (result.IsSuccessful)
+                {
+                    DialogService.Close(); // Close the current dialog
+
+                    // Open a new one with the success message
+                    await DialogService.OpenAsync("Registration Successful", ds =>
+                        @<div style="max-width: 600px;">
+                            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">
+                                Successfully registered!
+                            </RadzenText>
+                        </div>
+                    );
+                
+                }
+                else
+                {
+                    _dialogStatus = "Registration failed!";
+                    await InvokeAsync(StateHasChanged);
+                }
+            } else if(LogicType == "Login")
+            {
+                //Call the Refit API with the modified data
+                var token = await EasyBlogApi.UserLogin(inputData);
+                if (token != "")
+                {
+                    await LocalStorage.SetItemAsync("authToken", token);
+                
+                    DialogService.Close(); // Close the current dialog
+
+                    // Open a new one with the success message
+                    await DialogService.OpenAsync("Login Successful", ds =>
+                        @<div style="max-width: 600px;">
+                            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">
+                                Successfully logged in!
+                            </RadzenText>
+                        </div>
+                    );
+                    await OnLoginStatusChanged.InvokeAsync(true);
+                }
+                else
+                {
+                    _dialogStatus ="Something went wrong.";
+                }
+            }
+
+        }
+        catch (Exception ex)
+        {
+            _dialogStatus =$"Error: {ex.Message}";
+            
+        }
+        await InvokeAsync(StateHasChanged);
+        DialogService.Refresh();
+    }
+}

@@ -24,13 +24,6 @@ Welcome to your new app.
     private async Task ButtonClicked()
     {
         yikes += 1;
-        article = await this.FetchArticle();
+        //article = await this.FetchArticle();
     }
-
-    private async Task<ArticleDto> FetchArticle()
-    {
-        return await EasyBlogApi.GetArticle(1);
-    }
-
-
 }

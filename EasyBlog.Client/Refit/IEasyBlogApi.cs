@@ -12,5 +12,10 @@ namespace EasyBlog.Client.Refit
         [Get("/api/article/{id}")]
         Task<ArticleDto> GetArticle(int Id);
         
+        [Post("/api/User/register")]
+        Task<IApiResponse> UserRegister(UserDto formModel);
+    
+        [Post("/api/User/login")]
+        Task<string> UserLogin(UserDto formModel);
     }
 }

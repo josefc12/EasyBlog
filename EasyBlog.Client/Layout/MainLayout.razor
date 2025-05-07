@@ -1,4 +1,10 @@
+@using EasyBlog.Client.Refit
+@using EasyBlog.Client.Components
 @inherits LayoutComponentBase
+
+@inject DialogService DialogService
+@inject IEasyBlogApi EasyBlogApi
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
 <RadzenLayout>
     <RadzenHeader>
@@ -8,7 +14,16 @@
                 <RadzenLabel Text="Easy Blog" />
             </RadzenStack>
             <RadzenStack class="rz-pr-4" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent=JustifyContent.End Gap="4">
-                <RadzenButton Click=@(args => OnClick("Primary button")) Icon="account_circle" Text="Login" ButtonStyle="ButtonStyle.Secondary" />
+                @if (isLoggedIn == false)
+                {
+                    <RadzenButton Click=@Register Icon="account_circle" Text="Register" ButtonStyle="ButtonStyle.Secondary"/>
+                    <RadzenButton Click=@Login Icon="account_circle" Text="Login" ButtonStyle="ButtonStyle.Secondary"/>
+                }
+                else
+                {
+                    <RadzenButton Click=@Logout Icon="exit_to_app" Text="Log out" ButtonStyle="ButtonStyle.Secondary"/>
+                }
+
             </RadzenStack>
         </RadzenStack>
     </RadzenHeader>
@@ -20,6 +35,7 @@
             @Body
         </div>
     </RadzenBody>
+    <RadzenDialog />
     <RadzenFooter>
         Copyright josec12
     </RadzenFooter>
@@ -27,9 +43,45 @@
 
 @code {
     bool sidebar1Expanded = true;
+    private bool isLoggedIn;
 
-    private void OnClick(string text)
+    protected override async Task OnInitializedAsync()
     {
-
+        // Check login status on initialization
+        isLoggedIn = await GetLoginStatus();
     }
+    
+    private async Task Register()
+    {
+        var result = await DialogService.OpenAsync("Register", ds =>
+            @<LoginRegisterDialog LogicType="Register" OnLoginStatusChanged="HandleLoginStatusChanged"/>);
+    }
+    private async Task Login()
+    {
+        var result = await DialogService.OpenAsync("Login", ds =>
+            @<LoginRegisterDialog LogicType="Login" OnLoginStatusChanged="HandleLoginStatusChanged"/>);
+    }
+    private void HandleLoginStatusChanged(bool status)
+    {
+        isLoggedIn = status; // Update isLoggedIn based on the status received from the dialog
+        StateHasChanged();  // Trigger re-render to reflect the new login status
+    }
+
+    private async Task Logout()
+    {
+        await LocalStorage.SetItemAsync("authToken", "");
+        isLoggedIn = await GetLoginStatus();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<bool> GetLoginStatus()
+    {
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            return true;
+        }
+        return false;
+    }
+
 }

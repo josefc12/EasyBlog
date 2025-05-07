@@ -11,6 +11,8 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+builder.Services.AddScoped<DialogService>();
+
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<JwtTokenMessageHandler>();
 builder.Services.AddRefitClient<IEasyBlogApi>()

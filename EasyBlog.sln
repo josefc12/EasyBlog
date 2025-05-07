@@ -4,8 +4,6 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyBlog.Api", "EasyBlog.Api\EasyBlog.Api.csproj", "{82350002-EAE0-46C6-8BC7-21C6257648F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyBlog.Web", "EasyBlog.Web\EasyBlog.Web.csproj", "{7884D50D-4D5C-4917-8229-54AA8F558BF1}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyBlog.Shared", "EasyBlog.Shared\EasyBlog.Shared.csproj", "{6D0B50E1-19A0-4A67-AA09-0D4CF9009EF5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyBlog.Client", "EasyBlog.Client\EasyBlog.Client.csproj", "{79D42DF8-2AF1-407D-9AD0-5C3B82995960}"
