@@ -12,7 +12,7 @@ namespace EasyBlog.Api.Controllers
     public class UserController(IUserService userService) : ControllerBase
     {
         [HttpPost("register")]
-        public async Task<IActionResult> UserRegister(UserDto newUserData)
+        public async Task<IActionResult> UserRegister([FromBody] UserDto newUserData)
         {
 
             //Validate the DTO
@@ -36,17 +36,28 @@ namespace EasyBlog.Api.Controllers
 
             return Ok();
         }
-
-        //TODO: User login and Get user data
-
-        /*
+        
         [HttpPost("login")]
-        public async Task<JwtToken> UserLogin(UserDto loginData)
+        public async Task<IActionResult> UserLogin([FromBody] UserDto loginData)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid data.");
+            }
             
-            return new JwtToken {Token=null};
+            //Pass it to the service
+            var result = await userService.UserLogin(loginData);
+
+            if (result is OkObjectResult okObject)
+            {
+                var token = okObject.Value as string;
+                return Ok(token);
+            }
+
+            return BadRequest("Invalid data.");
         }
         
+        /*
         [Authorize]
         [HttpGet("user-data/{id}")]
         public async Task<UserDto> GetUserData(int id)
