@@ -11,6 +11,7 @@ public interface IUserRepository
 {
     Task<IActionResult> UserRegister(User newUser);
     Task<IActionResult> GetUser(string nickname);
+    Task<IActionResult> GetUserById(int userId);
 }
 
 public class UserRepository(EasyBlogDbContext context) : IUserRepository
@@ -46,5 +47,13 @@ public class UserRepository(EasyBlogDbContext context) : IUserRepository
         {
             return new StatusCodeResult(StatusCodes.Status500InternalServerError);
         }
+    }
+
+    public async Task<IActionResult> GetUserById(int userId)
+    {
+        var user = await context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        return new OkObjectResult(user);
     }
 }

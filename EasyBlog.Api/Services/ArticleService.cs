@@ -23,7 +23,6 @@ namespace EasyBlog.Api.Services
             var result = await articleRepository.AddArticle(article);
 
             return result;
-
         }
 
         public async Task<ArticleDto?> GetArticleAsync(int id)

@@ -7,5 +7,6 @@ namespace EasyBlog.Api.Data
     {
         public required DbSet<Article> Articles { get; set; }
         public required DbSet<User> Users { get; set; }
+        public required DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }

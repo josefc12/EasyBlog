@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using EasyBlog.Api.Models.Memory;
 using Microsoft.Extensions.Options;
@@ -46,6 +47,18 @@ public class JwtService
             );
         
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public string GenerateRefreshToken()
+    {
+
+        var randomBytes = new byte[32];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomBytes);
+        }
+        var token = Convert.ToBase64String(randomBytes);
+        return token;
     }
 
 }

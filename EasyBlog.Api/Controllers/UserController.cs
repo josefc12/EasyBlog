@@ -1,15 +1,17 @@
 using System.Threading.Tasks;
+using EasyBlog.Api.Data;
 using EasyBlog.Api.Models.Memory;
 using EasyBlog.Api.Services;
 using EasyBlog.Shared.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EasyBlog.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IUserService userService) : ControllerBase
+    public class UserController(IUserService userService, EasyBlogDbContext context) : ControllerBase
     {
         [HttpPost("register")]
         public async Task<IActionResult> UserRegister([FromBody] UserDto newUserData)
@@ -47,11 +49,21 @@ namespace EasyBlog.Api.Controllers
             
             //Pass it to the service
             var result = await userService.UserLogin(loginData);
-
+           
             if (result is OkObjectResult okObject)
             {
-                var token = okObject.Value as string;
-                return Ok(token);
+                var tokens = okObject.Value as AuthTokens;
+
+                // Set refresh token in HTTP-only cookie
+                Response.Cookies.Append("refreshToken", tokens.RefreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddDays(7)
+                });
+
+                return Ok(tokens.JwtToken);
             }
 
             return BadRequest("Invalid data.");

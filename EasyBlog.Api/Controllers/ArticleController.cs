@@ -2,6 +2,7 @@ using EasyBlog.Api.Data;
 using EasyBlog.Api.Models;
 using EasyBlog.Api.Services;
 using EasyBlog.Shared.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EasyBlog.Api.Controllers
@@ -22,6 +23,7 @@ namespace EasyBlog.Api.Controllers
             return result;
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<ArticleDto?>> GetArticle(int id)
         {

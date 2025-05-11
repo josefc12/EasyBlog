@@ -15,13 +15,15 @@ builder.Services.AddScoped<DialogService>();
 
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<JwtTokenMessageHandler>();
+
 builder.Services.AddRefitClient<IEasyBlogApi>()
     .ConfigureHttpClient(
         client => 
         {
-            client.BaseAddress = new Uri("http://localhost:5174");
+            client.BaseAddress = new Uri("https://localhost:5174");
         }
     )
+    .ConfigurePrimaryHttpMessageHandler(() => new CookieHttpClientHandler()) 
     .AddHttpMessageHandler<JwtTokenMessageHandler>();
 
 builder.Services.AddBlazoredLocalStorage();

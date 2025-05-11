@@ -18,11 +18,15 @@ builder.Services.AddDbContext<EasyBlogDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//These are the Controller services and repositories.
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
+//The JWT settings are setup in the config, then passed through the IOptions and used in code.
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddScoped<JwtService>();
@@ -33,15 +37,17 @@ builder.Services.AddAuthentication("Bearer")
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
+            //Validate the issuer, what's the valid issuer?
             ValidateIssuer = true,
             ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-
+            //Validate the audience, what's the valid audience?
             ValidateAudience = true,
             ValidAudience = builder.Configuration["JwtSettings:Audience"],
-
+            //Validate the lifetile too
             ValidateLifetime = true,
+            //Give or take 30 seconds
             ClockSkew = TimeSpan.FromSeconds(30),
-
+            //Gotta validate the key, whats's the correct key?
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]))
@@ -54,9 +60,10 @@ builder.Services.AddAuthentication("Bearer")
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient",
-        policy => policy.WithOrigins("http://localhost:5144")
+        policy => policy.WithOrigins("https://localhost:5144")
                         .AllowAnyHeader()
-                        .AllowAnyMethod());
+                        .AllowAnyMethod()
+                        .AllowCredentials()); //This enables cookies. Don't need anything else.
 });
 
 var app = builder.Build();
@@ -68,7 +75,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowBlazorClient");
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();

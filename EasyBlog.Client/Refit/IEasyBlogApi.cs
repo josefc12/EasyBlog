@@ -17,5 +17,9 @@ namespace EasyBlog.Client.Refit
     
         [Post("/api/User/login")]
         Task<string> UserLogin(UserDto formModel);
+
+        [Post("/api/Auth/refresh")]
+        Task<string> GetRefreshToken();
+
     }
 }
