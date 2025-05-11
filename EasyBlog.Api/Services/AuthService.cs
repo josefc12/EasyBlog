@@ -35,7 +35,6 @@ public class AuthService : IAuthService
         {
             
             var tokenRecord = tokenResult.Value as RefreshToken;
- 
             if (tokenRecord == null || tokenRecord.DateExpires < DateTime.UtcNow)
             {
                 return new StatusCodeResult(StatusCodes.Status401Unauthorized);
@@ -54,7 +53,7 @@ public class AuthService : IAuthService
                 {
                     return new StatusCodeResult(StatusCodes.Status401Unauthorized);
                 }
-            
+
                 if (userRecord.Id != null && userRecord.Nickname != null)
                 {
                     
@@ -70,7 +69,7 @@ public class AuthService : IAuthService
 
                     if (result is OkResult)
                     {
-                        return new OkObjectResult(new AuthTokens(){ JwtToken = token, RefreshToken = newRefreshToken });
+                        return new OkObjectResult(new AuthTokens(){ JwtToken = token, RefreshToken = newRefreshTokenHash });
                     }
 
                     //If anything went wrong just drop this for now:

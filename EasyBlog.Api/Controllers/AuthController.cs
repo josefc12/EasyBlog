@@ -22,7 +22,7 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<IActionResult> GetRefreshToken()
     {
-
+        
         // Get refresh token from cookie
         if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
         {
@@ -30,10 +30,9 @@ public class AuthController : ControllerBase
         }
 
         var result = await _authService.GetNewAuthTokensFromRefreshToken(refreshToken);
-        
+
         if (result is OkObjectResult authTokensResult)
         {
-            
             var authTokens = authTokensResult.Value as AuthTokens;
 
             if (authTokens == null || authTokens.JwtToken == null || authTokens.RefreshToken == null)
