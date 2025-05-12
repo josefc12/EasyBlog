@@ -1,10 +1,13 @@
 @using EasyBlog.Client.Refit
 @using EasyBlog.Client.Components
+@using EasyBlog.Client.Services
 @inherits LayoutComponentBase
 
 @inject DialogService DialogService
 @inject IEasyBlogApi EasyBlogApi
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+@inject LoginStateService LoginStateService
 
 <RadzenLayout>
     <RadzenHeader>
@@ -14,7 +17,7 @@
                 <RadzenLabel Text="Easy Blog" />
             </RadzenStack>
             <RadzenStack class="rz-pr-4" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent=JustifyContent.End Gap="4">
-                @if (isLoggedIn == false)
+                @if (LoginStateService.IsLoggedIn == false)
                 {
                     <RadzenButton Click=@Register Icon="account_circle" Text="Register" ButtonStyle="ButtonStyle.Secondary"/>
                     <RadzenButton Click=@Login Icon="account_circle" Text="Login" ButtonStyle="ButtonStyle.Secondary"/>
@@ -48,7 +51,8 @@
     protected override async Task OnInitializedAsync()
     {
         // Check login status on initialization
-        isLoggedIn = await GetLoginStatus();
+        LoginStateService.OnChange += StateHasChanged;
+        LoginStateService.IsLoggedIn = false;
     }
     
     private async Task Register()
@@ -60,6 +64,7 @@
     {
         var result = await DialogService.OpenAsync("Login", ds =>
             @<LoginRegisterDialog LogicType="Login" OnLoginStatusChanged="HandleLoginStatusChanged"/>);
+            
     }
     private void HandleLoginStatusChanged(bool status)
     {
@@ -70,10 +75,12 @@
     private async Task Logout()
     {
         await LocalStorage.SetItemAsync("authToken", "");
-        isLoggedIn = await GetLoginStatus();
+        LoginStateService.IsLoggedIn = false;
+        //isLoggedIn = await GetLoginStatus();
         await InvokeAsync(StateHasChanged);
     }
 
+    /*
     private async Task<bool> GetLoginStatus()
     {
         var token = await LocalStorage.GetItemAsync<string>("authToken");
@@ -82,6 +89,12 @@
             return true;
         }
         return false;
+    }
+    */
+
+    public void Dispose()
+    {
+        LoginStateService.OnChange -= StateHasChanged;
     }
 
 }

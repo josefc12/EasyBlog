@@ -6,10 +6,13 @@ using EasyBlog.Client.Refit;
 using EasyBlog.Client.Security;
 using Blazored.LocalStorage;
 using Radzen;
+using EasyBlog.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+builder.Services.AddScoped<LoginStateService>();
 
 builder.Services.AddScoped<DialogService>();
 

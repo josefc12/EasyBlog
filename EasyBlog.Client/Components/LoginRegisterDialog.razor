@@ -1,8 +1,11 @@
 @using EasyBlog.Client.Refit
+@using EasyBlog.Client.Services
 @using EasyBlog.Shared.Dtos
 @inject IEasyBlogApi EasyBlogApi
 @inject DialogService DialogService
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject LoginStateService LoginStateService
+
 <div style="max-width: 600px;">
     <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start">
         <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Nickname</RadzenText>
@@ -48,7 +51,7 @@
                 if (result.IsSuccessful)
                 {
                     DialogService.Close(); // Close the current dialog
-
+                    
                     // Open a new one with the success message
                     await DialogService.OpenAsync("Registration Successful", ds =>
                         @<div style="max-width: 600px;">
@@ -57,7 +60,7 @@
                             </RadzenText>
                         </div>
                     );
-                
+                    
                 }
                 else
                 {
@@ -71,7 +74,7 @@
                 if (token != "")
                 {
                     await LocalStorage.SetItemAsync("authToken", token);
-                
+                    LoginStateService.IsLoggedIn = true;
                     DialogService.Close(); // Close the current dialog
 
                     // Open a new one with the success message
