@@ -1,4 +1,4 @@
-# EasyBlog
+# 📝 EasyBlog
 
 A primitive blogging app I creteated for ~~best~~ practice.
 
