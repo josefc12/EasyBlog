@@ -1,54 +1,52 @@
+@using EasyBlog.Client.Refit
+@using EasyBlog.Client.Services
+@using EasyBlog.Client.Components
+@using EasyBlog.Shared.Classes
+@using EasyBlog.Shared.Dtos
+
+@inject IEasyBlogApi EasyBlogApi
 @inject NavigationManager SkibiduNavigation
+@inject LoginStateService LoginStateService
 
 <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
 
-    <RadzenStack class="rz-p-4" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"  Gap="16">
-        <RadzenText class="rz-m-0" TextStyle="TextStyle.H5" TextAlign=TextAlign.Center>Articles</RadzenText>
-        <RadzenButton class="rz-p-2" Click=@(args => AddArticleClick()) Text="Add article" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" />
+    <RadzenStack class="rz-p-4" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="16">
+        <RadzenText class="rz-m-0" TextStyle="TextStyle.H5" TextAlign=TextAlign.Center >Articles</RadzenText>
+        @if (LoginStateService.IsAdmin == true)
+        {
+            <RadzenButton class="rz-p-2" Click=@(args => AddArticleClick()) Text="Add article" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" />
+        }
+
     </RadzenStack>
-    <RadzenTree class="rz-pl-4">
+    
+    @*Skibidi tree had been created for a single, rigit purpose. It loads specific components, specificly nested.*@
+    <SkibidiTree Years=@years />
 
-        <RadzenTreeItem   Text="BMW">
-            <ChildContent>
-                <RadzenTreeItem Text="M3" />
-                <RadzenTreeItem Text="M5" />
-            </ChildContent>
-            <Template>
-                <img alt="BMW" src="https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg" style="width: 20px;" class="rz-me-2" />
-                <b>@context.Text</b>
-            </Template>
-        </RadzenTreeItem>
-
-        <RadzenTreeItem Text="Audi">
-            <ChildContent>
-                <RadzenTreeItem Text="RS4" />
-                <RadzenTreeItem Text="RS6" />
-            </ChildContent>
-            <Template>
-                <img alt="Audi" src="https://upload.wikimedia.org/wikipedia/commons/9/92/Audi-Logo_2016.svg" style="width: 20px;" class="rz-me-2" />
-                <b>@context.Text</b>
-            </Template>
-        </RadzenTreeItem>
-
-        <RadzenTreeItem Text="Mercedes">
-            <Template>
-                <img alt="Mercedes" src="https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg" style="width: 20px;" class="rz-me-2" />
-                <b>@context.Text</b>
-            </Template>
-            <ChildContent>
-                <RadzenTreeItem Text="C63 AMG" />
-                <RadzenTreeItem Text="S63 AMG" />
-            </ChildContent>
-        </RadzenTreeItem>
-
-    </RadzenTree>
 </RadzenStack>
 
 @code {
+
+    private List<EasyBlogTreeNode> years = new List<EasyBlogTreeNode>();
+
+    private bool isLoggedIn;
     protected override async Task OnInitializedAsync()
     {
-        //Get article years.
+        // Check login status on initialization
+        LoginStateService.OnChange += StateHasChanged;
+        LoginStateService.IsLoggedIn = false;
 
+        var yearData = await EasyBlogApi.GetArticleData(Shared.Enums.ArticleDataTypes.Years);
+        years = yearData.Select(y => new EasyBlogTreeNode
+        {
+            Text = y,
+            Value = y,
+            HasChildren = true
+        }).ToList();
+        foreach(var yr in years)
+        {
+            Console.WriteLine(yr.Text);
+        }
+        StateHasChanged();
     }
 
     private void AddArticleClick()
@@ -56,4 +54,5 @@
         //Navigate to the authoring page
         SkibiduNavigation.NavigateTo("create-article");
     }
+
 }

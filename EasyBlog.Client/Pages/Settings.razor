@@ -1,0 +1,51 @@
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject IEasyBlogApi EasyBlogApi
+@inject LoginStateService LoginStateService
+
+@page "/settings"
+@using EasyBlog.Client.Refit
+@using EasyBlog.Client.Services
+@using EasyBlog.Shared.Dtos
+@using EasyBlog.Shared.Enums
+
+<PageTitle>Settings</PageTitle>
+
+@if(LoginStateService.IsAdmin)
+{
+    <h1>You can mark users as Admins here</h1>
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Enter Username(Nickname)</RadzenText>
+        <RadzenTextBox @bind-Value=@nickname aria-label="Default TextBox" />
+        <RadzenButton Click=@(args => OnSubmit(nickname)) Text="Assign Admin role" ButtonStyle="ButtonStyle.Primary" />
+    </RadzenCard>
+    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">@statusMessage</RadzenText>
+}
+
+
+@code {
+    private string nickname = null;
+    private string userRole = "";
+    private List<UserDto> users = new();
+
+    private string statusMessage = "";
+
+    protected async override Task OnInitializedAsync()
+    {
+        LoginStateService.OnChange += StateHasChanged;
+    }
+
+    private async Task OnSubmit(string nickname)
+    {
+        //Try assigning the user of the entered nickname
+        var result = await EasyBlogApi.SetAdminRole(nickname);
+        if (result.IsSuccessStatusCode)
+        {
+            statusMessage = "User was assigned the Admin privileges.";
+        } else 
+        {
+            statusMessage = "User either doesn't exist, already was an Admin or there was a server-side error.";
+        }
+        StateHasChanged();
+    }
+
+}

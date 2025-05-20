@@ -1,0 +1,33 @@
+@using EasyBlog.Shared.Classes;
+
+@code {
+    private List<EasyBlogTreeNode> _years = new();
+
+    [Parameter]
+    public List<EasyBlogTreeNode> Years
+    {
+        get => _years;
+        set
+        {
+            if (_years != value)
+            {
+                _years = value;
+                StateHasChanged(); // This forces the component to re-render
+            }
+        }
+    }
+
+    private async Task HandleNodeClick(EasyBlogYearItem yearItem,string year)
+    {
+        await yearItem.LoadMonths(year);
+    }
+}
+
+<ul style="list-style-type: none;">
+@foreach (EasyBlogTreeNode year in Years)
+{
+    <li style="list-style-type: none;">
+        <EasyBlogYearItem Click="(e) => HandleNodeClick(e, year.Value)">@year.Text</EasyBlogYearItem>
+    </li>
+}
+</ul>

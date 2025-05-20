@@ -1,0 +1,62 @@
+@inject IEasyBlogApi EasyBlogApi
+@inject NavigationManager SkibiduNavigation
+@inject HttpClient Http
+
+@page "/edit-homepage"
+@using EasyBlog.Shared.Dtos
+@using EasyBlog.Client.Refit
+
+<RadzenStack class="rz-p-4" Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent=JustifyContent.Stretch Gap="16">
+    <h1>Edit the Homepage</h1>
+    <RadzenCard style="height: 550px;width: 100%;">
+        <RadzenHtmlEditor 
+            @bind-Value=@htmlValue 
+            style="height: 90%"
+            UploadComplete=@OnUploadComplete 
+            Execute=@OnExecute
+            UploadUrl="upload/image" />
+    </RadzenCard>
+    <RadzenButton Click=@(args => EditHomePage()) Text="Submit" ButtonStyle="ButtonStyle.Secondary" />
+
+</RadzenStack>
+
+@code {
+    private string? htmlValue = null;
+
+    protected async override Task OnInitializedAsync()
+    {
+        // Fetch the html from the database. It's saved in a static file.
+        htmlValue = await EasyBlogApi.GetHomePageContent();
+    }
+
+    void OnChange(string value, string name)
+    {
+        
+    }
+
+    private async Task EditHomePage()
+    {
+        
+        if(htmlValue != null)
+        {
+            //navigate to the new article page
+            var result = await EasyBlogApi.UpdateHomePageContent(htmlValue);
+            if (result.IsSuccessStatusCode)
+            {
+                Console.WriteLine(result);
+                SkibiduNavigation.NavigateTo("/");
+            }
+            
+        }
+        return;
+    }
+    void OnExecute(HtmlEditorExecuteEventArgs args)
+    {
+        
+    }
+
+    void OnUploadComplete(UploadCompleteEventArgs args)
+    {
+        
+    }
+}

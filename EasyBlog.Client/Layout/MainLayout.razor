@@ -1,11 +1,14 @@
 @using EasyBlog.Client.Refit
-@using EasyBlog.Client.Components
 @using EasyBlog.Client.Services
+@using EasyBlog.Client.Components
+@using System.IdentityModel.Tokens.Jwt
+
 @inherits LayoutComponentBase
 
 @inject DialogService DialogService
 @inject IEasyBlogApi EasyBlogApi
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager Navigation
 
 @inject LoginStateService LoginStateService
 
@@ -14,6 +17,7 @@
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent=JustifyContent.SpaceBetween Gap="0">
             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"  Gap="16">
                 <RadzenSidebarToggle Click="@(() => sidebar1Expanded = !sidebar1Expanded)" />
+                <RadzenButton Click=@(e => Navigation.NavigateTo("/")) Icon="home" ButtonStyle="ButtonStyle.Secondary"/>
                 <RadzenLabel Text="Easy Blog" />
             </RadzenStack>
             <RadzenStack class="rz-pr-4" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent=JustifyContent.End Gap="4">
@@ -24,9 +28,10 @@
                 }
                 else
                 {
+                    <RadzenIcon Icon="account_circle"/>
+                    <RadzenLabel Text=@nickname Class="rz-pr-4" />
                     <RadzenButton Click=@Logout Icon="exit_to_app" Text="Log out" ButtonStyle="ButtonStyle.Secondary"/>
                 }
-
             </RadzenStack>
         </RadzenStack>
     </RadzenHeader>
@@ -47,14 +52,17 @@
 @code {
     bool sidebar1Expanded = true;
     private bool isLoggedIn;
-
+    private string? nickname;
     protected override async Task OnInitializedAsync()
     {
         // Check login status on initialization
         LoginStateService.OnChange += StateHasChanged;
         LoginStateService.IsLoggedIn = false;
+
+        // Get the token from LocalStorage
+        nickname = await GetNickname();
+
     }
-    
     private async Task Register()
     {
         var result = await DialogService.OpenAsync("Register", ds =>
@@ -64,11 +72,13 @@
     {
         var result = await DialogService.OpenAsync("Login", ds =>
             @<LoginRegisterDialog LogicType="Login" OnLoginStatusChanged="HandleLoginStatusChanged"/>);
-            
+        
     }
-    private void HandleLoginStatusChanged(bool status)
+    private async void HandleLoginStatusChanged(bool status)
     {
         isLoggedIn = status; // Update isLoggedIn based on the status received from the dialog
+        var storedNickname = await GetNickname();
+        nickname = storedNickname;
         StateHasChanged();  // Trigger re-render to reflect the new login status
     }
 
@@ -80,21 +90,27 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    /*
-    private async Task<bool> GetLoginStatus()
-    {
-        var token = await LocalStorage.GetItemAsync<string>("authToken");
-        if (!string.IsNullOrWhiteSpace(token))
-        {
-            return true;
-        }
-        return false;
-    }
-    */
-
     public void Dispose()
     {
         LoginStateService.OnChange -= StateHasChanged;
     }
 
+    private async Task<string> GetNickname()
+    {
+        // Get the token from LocalStorage
+        var token = await LocalStorage.GetItemAsync<string>("authToken");;
+        
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            // Decode the token to extract the nickname
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadToken(token) as System.IdentityModel.Tokens.Jwt.JwtSecurityToken;
+            LoginStateService.IsLoggedIn = true;
+            return jwtToken?.Claims.FirstOrDefault(c => c.Type == "nickname")?.Value ?? "Guest";
+        }
+        else
+        {
+            return "Guest";   
+        }
+    }
 }

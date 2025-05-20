@@ -1,0 +1,84 @@
+@inject IEasyBlogApi EasyBlogApi
+@inject NavigationManager SkibiduNavigation
+
+@page "/edit-article/{id:int}"
+@using EasyBlog.Shared.Dtos
+@using EasyBlog.Client.Refit
+
+<RadzenStack class="rz-p-4" Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent=JustifyContent.Stretch Gap="16">
+    <h1>Edit an existing article</h1>
+    <RadzenCard style="width: 100%;">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Edit the title</RadzenText>
+        <RadzenTextBox @bind-Value=@title  Style="width: 100%" aria-label="Title" />
+    </RadzenCard>
+
+    <RadzenCard style="height: 550px;width: 100%;">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Edit the body of the article</RadzenText>
+        <RadzenHtmlEditor 
+            @bind-Value=@htmlValue 
+            style="height: 90%"
+            UploadComplete=@OnUploadComplete 
+            Execute=@OnExecute
+            UploadUrl="upload/image" />
+    </RadzenCard>
+    <RadzenButton Click=@(args => UpdateExistingArticle()) Text="Submit" ButtonStyle="ButtonStyle.Secondary" />
+
+</RadzenStack>
+
+@code {
+
+    [Parameter]
+    public int id { get; set; }
+    private ArticleDto? articleDto = null;
+    private string? title = null;
+    private string? htmlValue = null;
+
+    protected async override Task OnInitializedAsync()
+    {
+        // Use the `id` value here
+        articleDto = await EasyBlogApi.GetArticle(id);
+        if (articleDto != null)
+        {
+            title = articleDto.Title;
+            htmlValue = articleDto.Body;
+        }
+    }
+
+    void OnChange(string value, string name)
+    {
+        
+    }
+
+    private async Task UpdateExistingArticle()
+    {
+
+        if (title == null || htmlValue == null)
+        {
+            return;
+        }
+
+        if (articleDto != null)
+        {
+            articleDto.Title = title;
+            articleDto.Body = htmlValue;
+        }
+
+        var result = await EasyBlogApi.EditArticle(articleDto);
+
+        if(result != null)
+        {
+            //navigate to the new article page
+            SkibiduNavigation.NavigateTo("article/"+ result);
+        }
+        return;
+    }
+    void OnExecute(HtmlEditorExecuteEventArgs args)
+    {
+        
+    }
+
+    void OnUploadComplete(UploadCompleteEventArgs args)
+    {
+        
+    }
+}

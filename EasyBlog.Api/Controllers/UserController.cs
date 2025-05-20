@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Threading.Tasks;
 using EasyBlog.Api.Data;
 using EasyBlog.Api.Models.Memory;
@@ -38,7 +39,7 @@ namespace EasyBlog.Api.Controllers
 
             return Ok();
         }
-        
+
         [HttpPost("login")]
         public async Task<IActionResult> UserLogin([FromBody] UserDto loginData)
         {
@@ -46,10 +47,10 @@ namespace EasyBlog.Api.Controllers
             {
                 return BadRequest("Invalid data.");
             }
-            
+
             //Pass it to the service
             var result = await userService.UserLogin(loginData);
-           
+
             if (result is OkObjectResult okObject)
             {
                 var tokens = okObject.Value as AuthTokens;
@@ -68,15 +69,27 @@ namespace EasyBlog.Api.Controllers
 
             return BadRequest("Invalid data.");
         }
+    
         
-        /*
-        [Authorize]
-        [HttpGet("user-data/{id}")]
-        public async Task<UserDto> GetUserData(int id)
+        [Authorize(Policy = "AdminOnly")]
+        [HttpPost("set-admin-role/{nickname}")]
+        public async Task<IActionResult> SetAdminRole(string nickname)
         {
+
+            if (string.IsNullOrWhiteSpace(nickname))
+            {
+                return BadRequest("Invalid nickname.");
+            }
+
+            var result = await userService.SetAdminRole(nickname);
+
+            if (result is OkObjectResult okObject)
+            {
+                return Ok("User was assigned the Admin role.");
+            }
             
-            return new JwtToken {Token=null};
+            return BadRequest("User not found or invalid data.");
         }
-        */
+        
     }
 }

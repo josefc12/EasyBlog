@@ -1,0 +1,73 @@
+@using EasyBlog.Client.Refit
+@using EasyBlog.Shared.Classes;
+@using EasyBlog.Shared.Enums;
+
+@inject IEasyBlogApi EasyBlogApi
+
+@code {
+    [Parameter]
+    public List<EasyBlogTreeNode> Children { get; set; } = new();
+    
+    [Parameter]
+    public EventCallback<EasyBlogYearItem> Click { get; set; }
+    
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    private async Task OnClick()
+    {
+        await Click.InvokeAsync(this);
+    }
+
+    public string? Year {get;set;}
+
+    private bool isOpened {get;set;} = false;
+    
+    public async Task LoadMonths(string year)
+    {
+        if (!isOpened)
+        {
+            Year = year;
+            int convertedYear = Int32.Parse(year);
+            var result = await EasyBlogApi.GetArticleData(ArticleDataTypes.Months, convertedYear);
+            foreach(string r in result)
+            {
+
+                string convertedMonth = GetMonthName(Int32.Parse(r));
+
+                Children.Add(new EasyBlogTreeNode(){
+                    Text=convertedMonth,
+                    Value=r,
+                });
+            }
+            isOpened = true;
+            StateHasChanged();
+        } else 
+        {
+            
+            Children.Clear();
+            isOpened = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleNodeClick(EasyBlogMonthItem monthItem, string month , string year)
+    {
+        monthItem.LoadArticles(year,month);
+    }
+    private string GetMonthName(int monthNumber)
+    {
+        return new DateTime(1, monthNumber, 1).ToString("MMMM");
+    }
+
+}
+<div @onclick="OnClick" style="cursor: pointer; border: 1px solid #ec1765; border-radius: 8px; padding-left: 4px;padding-right:12px;margin:2px;">
+    @(isOpened ? "▼" : "▶") @ChildContent
+</div>
+<ul style="list-style-type: none;">
+@foreach (var child in Children)
+{
+    <li style="list-style-type: none;">
+        <EasyBlogMonthItem Click="(e) => HandleNodeClick(e, child.Value ,Year)">@child.Text</EasyBlogMonthItem>
+    </li>
+}
+</ul>

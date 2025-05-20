@@ -1,16 +1,31 @@
 @inject IEasyBlogApi EasyBlogApi
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
 @page "/article/{id:int}"
 @using EasyBlog.Shared.Dtos
 @using EasyBlog.Client.Refit
+@using Blazored.LocalStorage;
 
 
 @if (articleDto != null)
 {
-
+    <PageTitle>@articleDto.Title</PageTitle>
     @if (articleDto.Title != null)
     {
-        <RadzenText Text="@articleDto.Title" TextStyle="TextStyle.H4"></RadzenText>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent=JustifyContent.End Gap="12">
+            <RadzenText Style="margin:0px;" TextAlign="TextAlign.Center" Text="@articleDto.DateCreated.ToString()" TextStyle="TextStyle.Subtitle2"></RadzenText>
+            <p Style="margin:0px;">|</p>
+            <RadzenText TextAlign="TextAlign.Center" Text="@articleDto.Title" TextStyle="TextStyle.Subtitle2" Style="font-weight: bold;margin:0px;"></RadzenText>
+            <p Style="margin:0px;">|</p>
+            <RadzenText Style="margin:0px;" TextAlign="TextAlign.Center" Text="@articleDto.Author.Nickname" TextStyle="TextStyle.Subtitle2"></RadzenText>
+            @if(amAuthor)
+            {
+                <RadzenButton Style="margin:0px;" class="rz-p-2" Click=@(args => EditArticleClick()) Text="Edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" />
+            }
+            
+        </RadzenStack>
+        
     }
     @if (articleDto.Body != null)
     {
@@ -19,15 +34,39 @@
 
 }
 
-
 @code {
     [Parameter]
     public int id { get; set; }
     private ArticleDto? articleDto = null;
+    private bool amAuthor = false;
 
-    protected async override Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        // Use the `id` value here
+        articleDto = null; // Clear the previous article
         articleDto = await EasyBlogApi.GetArticle(id);
+
+        // If the article is not found, you might want to handle it:
+        if (articleDto is null)
+        {
+            // Display a message or redirect
+        }
+        amAuthor = false;
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            // Decode the token to extract the nickname
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadToken(token) as System.IdentityModel.Tokens.Jwt.JwtSecurityToken;
+            string nickname = jwtToken?.Claims.FirstOrDefault(c => c.Type == "nickname")?.Value ?? "";
+            if (nickname == articleDto.Author.Nickname)
+            {
+                amAuthor = true;
+            }
+        }
+    }
+
+    private void EditArticleClick()
+    {
+        NavigationManager.NavigateTo("edit-article/" + id);
     }
 }

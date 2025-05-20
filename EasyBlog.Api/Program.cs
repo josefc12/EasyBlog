@@ -1,9 +1,13 @@
 
+using System.Security.Claims;
 using System.Text;
 using EasyBlog.Api.Data;
+using EasyBlog.Api.Models;
 using EasyBlog.Api.Models.Memory;
 using EasyBlog.Api.Repositories;
 using EasyBlog.Api.Services;
+using EasyBlog.Shared.Enums;
+using Isopoh.Cryptography.Argon2;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -57,6 +61,12 @@ builder.Services.AddAuthentication("Bearer")
         options.RequireHttpsMetadata = false;
     });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireClaim(ClaimTypes.Role, Roles.Admin.ToString()));
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient",
@@ -67,6 +77,34 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+var scope = app.Services.CreateScope();
+var services = scope.ServiceProvider;
+var context = services.GetRequiredService<EasyBlogDbContext>();
+context.Database.Migrate();
+var adminExists = await context.Users.Where(u => u.Nickname == "admin").FirstOrDefaultAsync();
+if (adminExists == null)
+{
+    try
+    {
+        string encryptedPassword = Argon2.Hash("Ap@T(^fhM3u*;mE5<:K_e");
+        User newAdmin = new User()
+        {
+            Nickname = "admin",
+            PasswordHash = encryptedPassword,
+            Email = null,
+            DateCreated = DateTime.UtcNow,
+            DateDeleted = null
+        };
+        context.Users.Add(newAdmin);
+        context.SaveChanges();
+    }
+    catch
+    {
+        throw new Exception("Didnt work");
+    }
+    
+}
 
 if (app.Environment.IsDevelopment())
 {

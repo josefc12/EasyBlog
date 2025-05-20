@@ -58,7 +58,7 @@ public class AuthService : IAuthService
                 {
                     
                     // Generate new access token
-                    var token = _jwtService.GenerateJwtToken(userRecord.Id.ToString(), userRecord.Nickname);
+                    var token = _jwtService.GenerateJwtToken(userRecord.Id.ToString(), userRecord.Nickname, userRecord.Role.ToString());
 
                     // Optionally rotate refresh token
                     var newRefreshToken = _jwtService.GenerateRefreshToken();

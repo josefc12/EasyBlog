@@ -1,0 +1,67 @@
+@using EasyBlog.Client.Refit
+@using EasyBlog.Shared.Classes;
+@using EasyBlog.Shared.Dtos
+
+@inject IEasyBlogApi EasyBlogApi
+@inject NavigationManager SkibiduNavigation
+
+@code {
+    [Parameter]
+    public List<EasyBlogTreeNode> Children { get; set; } = new();
+    [Parameter]
+    public EventCallback<EasyBlogMonthItem> Click { get; set; }
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool isOpened {get;set;} = false;
+
+    private async Task OnClick()
+    {
+        await Click.InvokeAsync(this);
+    }
+
+    public async void LoadArticles(string year, string month)
+    {
+        if (!isOpened)
+        {
+            var result = await EasyBlogApi.GetArticlesList(Int32.Parse(year),Int32.Parse(month));
+            foreach(ArticleDto a in result)
+            {
+                Children.Add(new EasyBlogTreeNode(){
+                    Text=a.Title,
+                    Value=a.Id.ToString(),
+                });
+            }
+            isOpened = true;
+            StateHasChanged();
+        } else 
+        {
+            isOpened = false;
+            Children.Clear();
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleNodeClick(RadzenLabel label, string articleId )
+    {
+        NavigateToArticle(articleId);
+    }
+
+    private void NavigateToArticle(string articleId)
+    {
+        Console.WriteLine(articleId);
+        SkibiduNavigation.NavigateTo($"/article/{articleId}");
+    }
+
+}
+<div @onclick="OnClick" style="cursor: pointer; border: 1px solid #4535cd; border-radius: 8px; padding-left: 4px;padding-right:12px; margin:2px;">
+        @(isOpened ? "▼" : "▶") @ChildContent
+</div>
+<ul>
+@foreach (var child in Children)
+{
+    <li>
+        <NavLink href=@($"/article/{child.Value}")>@child.Text</NavLink>
+    </li>
+}
+</ul>

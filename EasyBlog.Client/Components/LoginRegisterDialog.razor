@@ -1,6 +1,9 @@
+@namespace EasyBlog.Client.Components
+
 @using EasyBlog.Client.Refit
 @using EasyBlog.Client.Services
 @using EasyBlog.Shared.Dtos
+
 @inject IEasyBlogApi EasyBlogApi
 @inject DialogService DialogService
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
@@ -85,6 +88,7 @@
                             </RadzenText>
                         </div>
                     );
+
                     await OnLoginStatusChanged.InvokeAsync(true);
                 }
                 else

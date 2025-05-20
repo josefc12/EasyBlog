@@ -3,6 +3,7 @@ using EasyBlog.Api.Models;
 using EasyBlog.Api.Models.Memory;
 using EasyBlog.Api.Repositories;
 using EasyBlog.Shared.Dtos;
+using EasyBlog.Shared.Enums;
 using Isopoh.Cryptography.Argon2;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -14,6 +15,7 @@ public interface IUserService
     Task<IActionResult> UserRegister(UserDto newUserData);
     Task<IActionResult> UserLogin(UserDto loginData);
     Task<IActionResult> GetUserById(int userId);
+    Task<IActionResult> SetAdminRole(string nickname);
 }
 
 public class UserService(IUserRepository userRepository, IAuthRepository authRepository, JwtService jwtService, EasyBlogDbContext context) : IUserService
@@ -21,12 +23,19 @@ public class UserService(IUserRepository userRepository, IAuthRepository authRep
     public async Task<IActionResult> UserRegister(UserDto newUserData)
     {
 
+        //If the user of the same nickname already exists, don't allow creation.
+        var result = await userRepository.GetUser(newUserData.Nickname);
+        if (result is OkObjectResult okResult)
+        {
+            return new StatusCodeResult(StatusCodes.Status400BadRequest);
+        }
+
         //Encrypt the password
         string encryptedPassword = Argon2.Hash(newUserData.PasswordHash);
         newUserData.PasswordHash = encryptedPassword;
-        
+
         //TODO nickname must be unique - do a check
-        
+
         //Create the actual entity
         User newUser = new()
         {
@@ -38,11 +47,11 @@ public class UserService(IUserRepository userRepository, IAuthRepository authRep
         };
 
         //Write the new user into the database
-        var result = await userRepository.UserRegister(newUser);
+        var sucResult = await userRepository.UserRegister(newUser);
 
-        return result;
+        return sucResult;
     }
-    
+
     public async Task<IActionResult> UserLogin(UserDto loginData)
     {
         //Try finding the user, if they exist
@@ -50,24 +59,24 @@ public class UserService(IUserRepository userRepository, IAuthRepository authRep
 
         if (result is OkObjectResult okResult)
         {
-            
-            var user = okResult.Value as User; 
-            
-            if (Argon2.Verify(user.PasswordHash , loginData.PasswordHash))
+
+            var user = okResult.Value as User;
+
+            if (Argon2.Verify(user.PasswordHash, loginData.PasswordHash))
             {
                 //Password correct, return the token
-                var token = jwtService.GenerateJwtToken(user.Id.ToString(), user.Nickname);
-                
+                var token = jwtService.GenerateJwtToken(user.Id.ToString(), user.Nickname, user.Role.ToString());
+
                 //Find their refresh token and see if it's valid.
-                var exitingRefreshTokenResult = await authRepository.FindExistingRefreshToken(userId:user.Id.ToString());
-                
+                var exitingRefreshTokenResult = await authRepository.FindExistingRefreshToken(userId: user.Id.ToString());
+
                 if (exitingRefreshTokenResult is OkObjectResult existingRefreshTokenRestult)
                 {
-                    var refreshTokenRecord = existingRefreshTokenRestult.Value as RefreshToken; 
+                    var refreshTokenRecord = existingRefreshTokenRestult.Value as RefreshToken;
 
                     if (refreshTokenRecord != null && refreshTokenRecord.DateExpires > DateTime.UtcNow)
                     {
-                        return new OkObjectResult(new AuthTokens{JwtToken = token, RefreshToken = refreshTokenRecord.Token});
+                        return new OkObjectResult(new AuthTokens { JwtToken = token, RefreshToken = refreshTokenRecord.Token });
                     }
                     else if (refreshTokenRecord == null || refreshTokenRecord.IsRevoked == true)
                     {
@@ -84,8 +93,8 @@ public class UserService(IUserRepository userRepository, IAuthRepository authRep
                             IsRevoked = false
                         });
                         await context.SaveChangesAsync();
-                        
-                        return new OkObjectResult(new AuthTokens{JwtToken = token, RefreshToken = refreshTokenHash});
+
+                        return new OkObjectResult(new AuthTokens { JwtToken = token, RefreshToken = refreshTokenHash });
                     }
                 }
 
@@ -110,16 +119,7 @@ public class UserService(IUserRepository userRepository, IAuthRepository authRep
 
             if (userRecord != null)
             {
-                UserDto userDto = new UserDto()
-                {
-                    Id = userRecord.Id,
-                    Nickname = userRecord.Nickname,
-                    Email = userRecord.Email,
-                    DateCreated = userRecord.DateCreated,
-                    DateDeleted = userRecord.DateDeleted
-                };
-
-                return new OkObjectResult(userDto);
+                return new OkObjectResult(userRecord);
             }
 
             //Something went wrong along the way
@@ -128,5 +128,25 @@ public class UserService(IUserRepository userRepository, IAuthRepository authRep
 
         //Something went wrong along the way
         return new StatusCodeResult(StatusCodes.Status401Unauthorized);
+    }
+
+    public async Task<IActionResult> SetAdminRole(string nickname)
+    {
+        var user = await userRepository.GetUser(nickname);
+        if (user is OkObjectResult userResult)
+        {
+            var userRecord = userResult.Value as User;
+
+            if (userRecord != null)
+            {
+                userRecord.Role = Roles.Admin;
+                await userRepository.SetAdminRole(userRecord);
+                return new OkObjectResult(userRecord);
+            }
+            //TODO probably best to return something explicit
+            return new StatusCodeResult(StatusCodes.Status400BadRequest);
+        }
+        //TODO probably best to return something explicit
+        return new StatusCodeResult(StatusCodes.Status400BadRequest);
     }
 }

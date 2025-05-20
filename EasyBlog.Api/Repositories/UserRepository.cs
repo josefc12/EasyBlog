@@ -12,6 +12,7 @@ public interface IUserRepository
     Task<IActionResult> UserRegister(User newUser);
     Task<IActionResult> GetUser(string nickname);
     Task<IActionResult> GetUserById(int userId);
+    Task<IActionResult> SetAdminRole(User updatedUser);
 }
 
 public class UserRepository(EasyBlogDbContext context) : IUserRepository
@@ -24,14 +25,14 @@ public class UserRepository(EasyBlogDbContext context) : IUserRepository
             await context.SaveChangesAsync();
             return new OkResult();
         }
-        catch (Exception e) 
+        catch (Exception e)
         {
             return new StatusCodeResult(StatusCodes.Status500InternalServerError);
         }
-        
+
 
     }
-    
+
     public async Task<IActionResult> GetUser(string nickname)
     {
         try
@@ -43,7 +44,7 @@ public class UserRepository(EasyBlogDbContext context) : IUserRepository
             }
             return new OkObjectResult(user);
         }
-        catch (Exception e) 
+        catch (Exception e)
         {
             return new StatusCodeResult(StatusCodes.Status500InternalServerError);
         }
@@ -55,5 +56,19 @@ public class UserRepository(EasyBlogDbContext context) : IUserRepository
             .FirstOrDefaultAsync(u => u.Id == userId);
 
         return new OkObjectResult(user);
+    }
+
+    public async Task<IActionResult> SetAdminRole(User updatedUser)
+    {
+        // Attach if not tracked
+        if (context.Entry(updatedUser).State == EntityState.Detached)
+        {
+            context.Users.Attach(updatedUser);
+        }
+        // Mark as modified
+        context.Entry(updatedUser).State = EntityState.Modified;
+
+        await context.SaveChangesAsync();
+        return new OkResult();
     }
 }

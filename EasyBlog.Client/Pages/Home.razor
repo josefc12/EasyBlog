@@ -1,29 +1,32 @@
 @inject IEasyBlogApi EasyBlogApi
+@inject LoginStateService LoginStateService
+@inject NavigationManager NavigationManager
 
 @page "/"
+@using EasyBlog.Client.Services
 @using EasyBlog.Shared.Dtos
 @using EasyBlog.Client.Refit
 
 <PageTitle>Home</PageTitle>
-
-<h1>Hello, world!</h1>
-
-Skibidy number: @yikes
-
-Bababuey: @article.Title
-
-Welcome to your new app.
-
-<RadzenButton Click="@ButtonClicked" Text="Hi"></RadzenButton>
-@code {
-
-
-    private int yikes = 0;
-    private ArticleDto article = new ArticleDto(){Title = "nothing", Body = "nothing"};
-
-    private async Task ButtonClicked()
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent=JustifyContent.End Gap="12">
+    @if (LoginStateService.IsAdmin == true)
     {
-        yikes += 1;
-        //article = await this.FetchArticle();
+        <RadzenButton Style="margin:0px;" class="rz-p-2" Click=@(args => EditHomePageClick()) Text="Edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" />
+    }
+</RadzenStack>
+@if (htmlValue!= null)
+{
+    @((MarkupString)htmlValue)
+}
+
+@code {
+    private string? htmlValue = null;
+    protected async override Task OnInitializedAsync()
+    {
+        htmlValue = await EasyBlogApi.GetHomePageContent();
+    }
+    private void EditHomePageClick()
+    {
+        NavigationManager.NavigateTo("edit-homepage");
     }
 }

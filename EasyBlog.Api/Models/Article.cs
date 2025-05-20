@@ -10,6 +10,8 @@ namespace EasyBlog.Api.Models
         public required string Title {get; set;}
         public required string Body {get; set;}
         public DateTime DateCreated {get; set;}
+        public User Author { get; set; }
+        public int AuthorId { get; set; }
 
         public Article()
         {
