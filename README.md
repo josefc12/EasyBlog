@@ -1,6 +1,6 @@
 # EasyBlog
 
-A primitive blogging app I creteated for best practice.
+A primitive blogging app I creteated for ~~best~~ practice.
 
 The Solution includes two project, one for the API backend (standard Controller-Service-Repo based backend) and a Blazor WASM front-end.
 
